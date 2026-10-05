@@ -2,8 +2,13 @@
 /**
  * LAYER 3 (hand overlay) — Tyhp-authored. Never regenerated.
  * Path: `_tyhpdef/overlays/*.tyhpdef` (not under overlays/stubs/).
- * File token stacks and violation data are keyed arrays.
+ * File token stack, violation records, and declaration shapes from the PHP source.
  */
+
+type boolean = bool;
+type integer = int;
+
+extern class \DOMElement;
 
 namespace PHP_CodeSniffer {
     /**
@@ -86,11 +91,12 @@ namespace PHP_CodeSniffer {
     };
 
     /**
-     * One ruleset.xml property. Array values are string lists or string maps.
+     * One ruleset.xml property. Array properties also store `extend`.
      */
     type RuleProperty = struct {
         string|array<int|string, string> $value;
         string $scope;
+        ?bool $extend;
     };
 
     /**
@@ -100,12 +106,20 @@ namespace PHP_CodeSniffer {
     type SniffPatternMap = array<string, string|array<string, string>>;
 
     /**
+     * `setSniffProperty` bag. `value` is the sniff property, which has no single type.
+     */
+    type SniffPropertySettings = struct {
+        string $scope;
+        mixed $value;
+        ?bool $extend;
+    };
+
+    /**
      * One token listener registered for a sniff.
      */
     type TokenListener = struct {
         string $class;
         string $source;
-        array<string, string> $tokenizers;
         array<int, string> $ignore;
         array<int, string> $include;
     };
@@ -123,9 +137,6 @@ namespace PHP_CodeSniffer {
 
         // @overlay-against: function getSettings(): array
         public function getSettings(): ConfigSettings;
-
-        // @overlay-against: function printConfigData(array $data): void
-        public function printConfigData(array<string, string> $data): void;
 
         // @overlay-against: function setCommandLineValues(array $args): void
         public function setCommandLineValues(array<int, string> $args): void;
@@ -151,20 +162,23 @@ namespace PHP_CodeSniffer {
         // @overlay-against: array $tokenListeners
         public array<int|string, array<string, TokenListener>> $tokenListeners ?? [];
 
-        // @overlay-against: function getIgnorePatterns(string|null $listener): array
+        // @overlay-against: function getIgnorePatterns(?string $listener): array
         public function getIgnorePatterns(null $listener = null): SniffPatternMap;
 
-        // @overlay-against: function getIgnorePatterns(string|null $listener): array
+        // @overlay-against: function getIgnorePatterns(?string $listener): array
         public function getIgnorePatterns(string $listener): array<string, string>;
 
-        // @overlay-against: function getIncludePatterns(string|null $listener): array
+        // @overlay-against: function getIncludePatterns(?string $listener): array
         public function getIncludePatterns(null $listener = null): array<string, array<string, string>>;
 
-        // @overlay-against: function getIncludePatterns(string|null $listener): array
+        // @overlay-against: function getIncludePatterns(?string $listener): array
         public function getIncludePatterns(string $listener): array<string, string>;
 
         // @overlay-against: function registerSniffs(array $files, array $restrictions, array $exclusions): void
         public function registerSniffs(array<int, string> $files, array<string, true> $restrictions, array<string, true> $exclusions): void;
+
+        // @overlay-against: function setSniffProperty(string $sniffClass, string $name, array $settings): void
+        public function setSniffProperty(string $sniffClass, string $name, SniffPropertySettings $settings): void;
     }
 }
 
@@ -311,44 +325,40 @@ namespace PHP_CodeSniffer\Files {
      */
     type ViolationMap = array<int, array<int, array<int, Violation>>>;
 
-    /**
-     * Overlay: token stack and violation data are keyed arrays.
-     * Ignored lines are sniff-code maps (`.all` ignores the line).
-     */
     // @overlay-against: class File
     partial class File {
-        // @overlay-against: function addError(string $error, int|null $stackPtr, string $code, array $data, int $severity, bool $fixable): bool
-        public function addError(string $error, int|null $stackPtr, string $code, array<int|string, string> $data = [], int $severity = 0, bool $fixable = false): bool;
+        // @overlay-against: function addError(string $error, ?int $stackPtr, string $code, array $data, int $severity, bool $fixable): boolean
+        public function addError(string $error, ?int $stackPtr, string $code, array<int|string, string> $data = [], int $severity = 0, bool $fixable = false): bool;
 
-        // @overlay-against: function addErrorOnLine(string $error, int $line, string $code, array $data, int $severity): bool
+        // @overlay-against: function addErrorOnLine(string $error, int $line, string $code, array $data, int $severity): boolean
         public function addErrorOnLine(string $error, int $line, string $code, array<int|string, string> $data = [], int $severity = 0): bool;
 
-        // @overlay-against: function addFixableError(string $error, int $stackPtr, string $code, array $data, int $severity): bool
+        // @overlay-against: function addFixableError(string $error, int $stackPtr, string $code, array $data, int $severity): boolean
         public function addFixableError(string $error, int $stackPtr, string $code, array<int|string, string> $data = [], int $severity = 0): bool;
 
-        // @overlay-against: function addFixableWarning(string $warning, int $stackPtr, string $code, array $data, int $severity): bool
+        // @overlay-against: function addFixableWarning(string $warning, int $stackPtr, string $code, array $data, int $severity): boolean
         public function addFixableWarning(string $warning, int $stackPtr, string $code, array<int|string, string> $data = [], int $severity = 0): bool;
 
-        // @overlay-against: function addWarning(string $warning, int|null $stackPtr, string $code, array $data, int $severity, bool $fixable): bool
-        public function addWarning(string $warning, int|null $stackPtr, string $code, array<int|string, string> $data = [], int $severity = 0, bool $fixable = false): bool;
+        // @overlay-against: function addWarning(string $warning, ?int $stackPtr, string $code, array $data, int $severity, bool $fixable): boolean
+        public function addWarning(string $warning, ?int $stackPtr, string $code, array<int|string, string> $data = [], int $severity = 0, bool $fixable = false): bool;
 
-        // @overlay-against: function addWarningOnLine(string $warning, int $line, string $code, array $data, int $severity): bool
+        // @overlay-against: function addWarningOnLine(string $warning, int $line, string $code, array $data, int $severity): boolean
         public function addWarningOnLine(string $warning, int $line, string $code, array<int|string, string> $data = [], int $severity = 0): bool;
 
         // @overlay-against: function findEndOfStatement(int $start, int|string|array|null $ignore): int
         public function findEndOfStatement(int $start, TokenTypeSpec|null $ignore = null): int;
 
-        // @overlay-against: function findFirstOnLine(int|string|array $types, int $start, bool $exclude, string|null $value): int|false
-        public function findFirstOnLine(TokenTypeSpec $types, int $start, bool $exclude = false, string|null $value = null): int|false;
+        // @overlay-against: function findFirstOnLine(int|string|array $types, int $start, bool $exclude, ?string $value): int|false
+        public function findFirstOnLine(TokenTypeSpec $types, int $start, bool $exclude = false, ?string $value = null): int|false;
 
         // @overlay-against: function findImplementedInterfaceNames(int $stackPtr): array|false
         public function findImplementedInterfaceNames(int $stackPtr): array<int, string>|false;
 
-        // @overlay-against: function findNext(int|string|array $types, int $start, int|null $end, bool $exclude, string|null $value, bool $local): int|false
-        public function findNext(TokenTypeSpec $types, int $start, int|null $end = null, bool $exclude = false, string|null $value = null, bool $local = false): int|false;
+        // @overlay-against: function findNext(int|string|array $types, int $start, ?int $end, bool $exclude, ?string $value, bool $local): int|false
+        public function findNext(TokenTypeSpec $types, int $start, ?int $end = null, bool $exclude = false, ?string $value = null, bool $local = false): int|false;
 
-        // @overlay-against: function findPrevious(int|string|array $types, int $start, int|null $end, bool $exclude, string|null $value, bool $local): int|false
-        public function findPrevious(TokenTypeSpec $types, int $start, int|null $end = null, bool $exclude = false, string|null $value = null, bool $local = false): int|false;
+        // @overlay-against: function findPrevious(int|string|array $types, int $start, ?int $end, bool $exclude, ?string $value, bool $local): int|false
+        public function findPrevious(TokenTypeSpec $types, int $start, ?int $end = null, bool $exclude = false, ?string $value = null, bool $local = false): int|false;
 
         // @overlay-against: function findStartOfStatement(int $start, int|string|array|null $ignore): int
         public function findStartOfStatement(int $start, TokenTypeSpec|null $ignore = null): int;
@@ -360,7 +370,7 @@ namespace PHP_CodeSniffer\Files {
         public function getErrors(): ViolationMap;
 
         // @overlay-against: function getIgnoredLines(): array
-        public function getIgnoredLines(): array<int, array<string, true|array<string, true>>>;
+        public function getIgnoredLines(): array<int, \PHP_CodeSniffer\Util\IgnoreList>;
 
         // @overlay-against: function getListenerTimes(): array
         public function getListenerTimes(): array<string, float>;
@@ -383,7 +393,7 @@ namespace PHP_CodeSniffer\Files {
         // @overlay-against: function getWarnings(): array
         public function getWarnings(): ViolationMap;
 
-        // @overlay-against: function hasCondition(int $stackPtr, int|string|array $types): bool
+        // @overlay-against: function hasCondition(int $stackPtr, int|string|array $types): boolean
         public function hasCondition(int $stackPtr, TokenTypeSpec $types): bool;
     }
 }
@@ -500,48 +510,6 @@ namespace PHP_CodeSniffer\Sniffs {
     }
 }
 
-namespace PHP_CodeSniffer\Tests\Standards {
-    /**
-     * The PHP class lives under tests/, outside the src/ harvest glob.
-     * Layer 1 subclasses extend it. The PHP parent is PHPUnit's TestCase, which this tyhpdef does not include.
-     */
-    abstract class AbstractSniffUnitTest {
-        public string|null $standardsDir ?? null;
-
-        public string|null $testsDir ?? null;
-
-        protected bool $backupGlobals ?? false;
-
-        /**
-         * @return array<int, int>
-         */
-        protected abstract function getErrorList(): array<int, int>;
-
-        /**
-         * @return array<int, int>
-         */
-        protected abstract function getWarningList(): array<int, int>;
-
-        /**
-         * @return array<int, string>
-         */
-        public function generateFailureMessages(\PHP_CodeSniffer\Files\LocalFile $file): array<int, string>;
-
-        /**
-         * @return array<int, string>
-         */
-        protected function getTestFiles(string $testFileBase): array<int, string>;
-
-        public function setCliValues(string $filename, \PHP_CodeSniffer\Config $config): void;
-
-        protected function setUpPrerequisites(): void;
-
-        protected function shouldSkipTest(): bool;
-
-        final public function testSniff(): void;
-    }
-}
-
 namespace PHP_CodeSniffer\Tokenizers {
     /**
      * One scope-opener row: which tokens open and close the scope.
@@ -553,12 +521,6 @@ namespace PHP_CodeSniffer\Tokenizers {
         bool $shared;
         array<int|string, int|string> $with;
     };
-
-    // @overlay-against: class JS extends \PHP_CodeSniffer\Tokenizers\Tokenizer
-    partial class JS {
-        // @overlay-against: array $scopeOpeners
-        public array<int|string, ScopeOpener> $scopeOpeners ?? [];
-    }
 
     // @overlay-against: class PHP extends \PHP_CodeSniffer\Tokenizers\Tokenizer
     partial class PHP {
@@ -575,7 +537,7 @@ namespace PHP_CodeSniffer\Tokenizers {
     // @overlay-against: class Tokenizer
     partial class Tokenizer {
         // @overlay-against: array $ignoredLines
-        public array<int, array<string, true|array<string, true>>> $ignoredLines ?? [];
+        public array<int, \PHP_CodeSniffer\Util\IgnoreList> $ignoredLines ?? [];
 
         // @overlay-against: array $scopeOpeners
         public array<int|string, ScopeOpener> $scopeOpeners ?? [];
@@ -594,6 +556,27 @@ namespace PHP_CodeSniffer\Util {
         string $name;
         string $namespace;
     };
+
+    /**
+     * Not harvested into Layer 1. `File::getIgnoredLines` returns these.
+     */
+    class IgnoreList {
+        public static function getInstanceIgnoringAll(): self;
+
+        public static function getInstanceIgnoringNothing(): self;
+
+        public static function getNewInstanceFrom(?self $ignoreList): self;
+
+        private function __construct(): void;
+
+        public function ignoresEverything(): bool;
+
+        public function ignoresNothing(): bool;
+
+        public function isIgnored(string $code): bool;
+
+        public function set(string $code, bool $ignore): self;
+    }
 
     // @overlay-against: class Standards
     partial class Standards {

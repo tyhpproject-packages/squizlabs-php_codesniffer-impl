@@ -5,8 +5,7 @@
     "include": [
         "./test_squizlabs_php_codesniffer.tyhp",
         "../composer.json",
-        "../../../php/composer.json",
-        "../../../php-ext-dom/composer.json"
+        "../../../php/composer.json"
     ],
     "exclude": [
         "./fail/**"

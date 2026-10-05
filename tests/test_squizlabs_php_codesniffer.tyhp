@@ -1,10 +1,5 @@
 <?tyhp
 
-function test_squizlabs_php_codesniffer_package_loads(): bool
-{
-    return true;
-}
-
 function test_sniff_register(\PHP_CodeSniffer\Sniffs\Sniff $sniff): array<int|string>
 {
     return $sniff->register();
@@ -22,5 +17,5 @@ function test_file_add_error(\PHP_CodeSniffer\Files\File $file): bool
 
 function test_tokens_assignment(): array<int|string, int|string>
 {
-    return \PHP_CodeSniffer\Util\Tokens::$assignmentTokens;
+    return \PHP_CodeSniffer\Util\Tokens::ASSIGNMENT_TOKENS;
 }
